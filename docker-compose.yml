@@ -38,3 +38,35 @@ services:
     depends_on:
       - zabbix-timescaledb
       - zabbix-server
+
+  zabbix-agent:
+    container_name: zabbix-agent
+    restart: unless-stopped
+    image: zabbix/zabbix-agent:centos-5.0.3
+    environment:
+      - ZBX_HOSTNAME=Zabbix server
+      - ZBX_DEBUGLEVEL=4
+      - ZBX_ENABLEREMOTECOMMANDS=1
+      - ZBX_SERVER_HOST=zabbix-server
+    depends_on:
+      - zabbix-server
+
+  grafana:
+    container_name: grafana-server
+    restart: unless-stopped
+    image: grafana/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=alexanderzobnin-zabbix-datasource
+      - GF_LOG_LEVEL=debug
+    ports:
+      - '3000:3000'
+    depends_on:
+      - zabbix-web
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"    
